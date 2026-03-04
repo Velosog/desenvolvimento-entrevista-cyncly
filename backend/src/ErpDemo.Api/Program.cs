@@ -7,6 +7,7 @@ using ErpDemo.Application.Validators;
 using ErpDemo.Domain.Interfaces;
 using ErpDemo.Infrastructure.Data;
 using ErpDemo.Infrastructure.Repositories;
+using ErpDemo.Infrastructure.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -33,7 +34,7 @@ builder.Services.AddScoped<IImportService, ImportService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
-builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IReportService, ErpDemo.Infrastructure.Services.ReportService>();
 builder.Services.AddHttpContextAccessor();
 
 // ─── FluentValidation ───

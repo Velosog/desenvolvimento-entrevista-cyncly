@@ -3,7 +3,7 @@ using ErpDemo.Application.Interfaces;
 using ErpDemo.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace ErpDemo.Application.Services;
+namespace ErpDemo.Infrastructure.Services;
 
 public class ReportService : IReportService
 {
