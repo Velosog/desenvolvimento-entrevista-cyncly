@@ -1,5 +1,6 @@
 import api from './client';
-import { Order, CreateOrder, CreateOrderItem, OrderStatus, PagedResult } from '../types';
+import type { Order, CreateOrder, CreateOrderItem, PagedResult } from '../types';
+import { OrderStatus } from '../types';
 
 export const getOrders = async (params?: {
   customerId?: string;

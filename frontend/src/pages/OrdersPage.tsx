@@ -1,7 +1,8 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { getOrders, createOrder, updateOrderStatus, addOrderItem, deleteOrderItem, deleteOrder, getOrder } from '../api/orders';
 import { getCustomers } from '../api/customers';
-import { Order, CreateOrderItem, OrderStatus, Customer } from '../types';
+import type { Order, CreateOrderItem, Customer } from '../types';
+import { OrderStatus } from '../types';
 import { useAuth } from '../context/AuthContext';
 
 export default function OrdersPage() {

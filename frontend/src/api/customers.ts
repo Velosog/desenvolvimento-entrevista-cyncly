@@ -1,5 +1,5 @@
 import api from './client';
-import { Customer, CreateCustomer, UpdateCustomer, PagedResult } from '../types';
+import type { Customer, CreateCustomer, UpdateCustomer, PagedResult } from '../types';
 
 export const getCustomers = async (params?: {
   name?: string;

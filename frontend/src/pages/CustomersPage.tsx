@@ -1,6 +1,6 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { getCustomers, createCustomer, updateCustomer, deleteCustomer } from '../api/customers';
-import { Customer, CreateCustomer, UpdateCustomer } from '../types';
+import type { Customer, CreateCustomer, UpdateCustomer } from '../types';
 import { useAuth } from '../context/AuthContext';
 
 export default function CustomersPage() {
