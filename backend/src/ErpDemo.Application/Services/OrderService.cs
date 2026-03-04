@@ -12,15 +12,21 @@ public class OrderService : IOrderService
     private readonly IOrderRepository _orderRepository;
     private readonly IOrderItemRepository _itemRepository;
     private readonly ICustomerRepository _customerRepository;
+    private readonly IAuditService _auditService;
+    private readonly ICurrentUserService _currentUser;
 
     public OrderService(
         IOrderRepository orderRepository,
         IOrderItemRepository itemRepository,
-        ICustomerRepository customerRepository)
+        ICustomerRepository customerRepository,
+        IAuditService auditService,
+        ICurrentUserService currentUser)
     {
         _orderRepository = orderRepository;
         _itemRepository = itemRepository;
         _customerRepository = customerRepository;
+        _auditService = auditService;
+        _currentUser = currentUser;
     }
 
     public async Task<OrderDto?> GetByIdAsync(Guid id)
@@ -65,7 +71,9 @@ public class OrderService : IOrderService
         order.RecalculateTotal();
         await _orderRepository.AddAsync(order);
 
-        return MapToDto(order);
+        var result = MapToDto(order);
+        await _auditService.LogAsync("Order", order.Id.ToString(), "Created", _currentUser.GetUserId(), null, result);
+        return result;
     }
 
     public async Task<OrderDto> UpdateStatusAsync(Guid id, UpdateOrderStatusDto dto)
@@ -79,9 +87,12 @@ public class OrderService : IOrderService
         if (order.Status == OrderStatus.Confirmed && dto.Status == OrderStatus.Draft)
             throw new InvalidOperationException("Pedido confirmado não pode voltar para rascunho.");
 
+        var before = MapToDto(order);
         order.Status = dto.Status;
         await _orderRepository.UpdateAsync(order);
-        return MapToDto(order);
+        var after = MapToDto(order);
+        await _auditService.LogAsync("Order", order.Id.ToString(), "Updated", _currentUser.GetUserId(), before, after);
+        return after;
     }
 
     public async Task<OrderItemDto> AddItemAsync(Guid orderId, CreateOrderItemDto dto)
@@ -110,6 +121,9 @@ public class OrderService : IOrderService
         order.RecalculateTotal();
         await _orderRepository.UpdateAsync(order);
 
+        await _auditService.LogAsync("Order", orderId.ToString(), "Updated", _currentUser.GetUserId(),
+            new { Action = "ItemAdded", ItemId = item.Id }, MapToDto(order));
+
         return MapItemToDto(item);
     }
 
@@ -130,6 +144,7 @@ public class OrderService : IOrderService
         if (item.OrderId != orderId)
             throw new InvalidOperationException("Item não pertence a este pedido.");
 
+        var beforeItem = MapItemToDto(item);
         item.Description = dto.Description;
         item.Quantity = dto.Quantity;
         item.UnitPrice = dto.UnitPrice;
@@ -138,6 +153,9 @@ public class OrderService : IOrderService
 
         order.RecalculateTotal();
         await _orderRepository.UpdateAsync(order);
+
+        await _auditService.LogAsync("Order", orderId.ToString(), "Updated", _currentUser.GetUserId(),
+            new { Action = "ItemUpdated", Before = beforeItem }, new { Action = "ItemUpdated", After = MapItemToDto(item) });
 
         return MapItemToDto(item);
     }
@@ -164,6 +182,9 @@ public class OrderService : IOrderService
         order.Items.Remove(item);
         order.RecalculateTotal();
         await _orderRepository.UpdateAsync(order);
+
+        await _auditService.LogAsync("Order", orderId.ToString(), "Updated", _currentUser.GetUserId(),
+            new { Action = "ItemRemoved", Item = MapItemToDto(item) }, MapToDto(order));
     }
 
     public async Task DeleteAsync(Guid id)
@@ -174,7 +195,9 @@ public class OrderService : IOrderService
         if (order.Status == OrderStatus.Confirmed)
             throw new InvalidOperationException("Pedido confirmado não pode ser excluído.");
 
+        var before = MapToDto(order);
         await _orderRepository.DeleteAsync(id);
+        await _auditService.LogAsync("Order", id.ToString(), "Deleted", _currentUser.GetUserId(), before, null);
     }
 
     private static OrderDto MapToDto(Order o) => new()

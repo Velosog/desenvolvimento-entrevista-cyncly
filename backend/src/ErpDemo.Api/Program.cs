@@ -1,4 +1,5 @@
 using System.Text;
+using ErpDemo.Api.Configuration;
 using ErpDemo.Api.Middleware;
 using ErpDemo.Application.Interfaces;
 using ErpDemo.Application.Services;
@@ -29,6 +30,10 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IImportService, ImportService>();
+builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddHttpContextAccessor();
 
 // ─── FluentValidation ───
 builder.Services.AddFluentValidationAutoValidation();

@@ -10,10 +10,24 @@ public class AppDbContext : DbContext
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<AuditLog>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Entity).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.EntityId).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Action).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.UserId).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Before).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.After).HasColumnType("nvarchar(max)");
+            entity.HasIndex(e => new { e.Entity, e.EntityId });
+            entity.HasIndex(e => e.Timestamp);
+        });
 
         modelBuilder.Entity<Customer>(entity =>
         {

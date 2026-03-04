@@ -9,10 +9,14 @@ namespace ErpDemo.Application.Services;
 public class CustomerService : ICustomerService
 {
     private readonly ICustomerRepository _repository;
+    private readonly IAuditService _auditService;
+    private readonly ICurrentUserService _currentUser;
 
-    public CustomerService(ICustomerRepository repository)
+    public CustomerService(ICustomerRepository repository, IAuditService auditService, ICurrentUserService currentUser)
     {
         _repository = repository;
+        _auditService = auditService;
+        _currentUser = currentUser;
     }
 
     public async Task<CustomerDto?> GetByIdAsync(Guid id)
@@ -51,6 +55,7 @@ public class CustomerService : ICustomerService
         };
 
         await _repository.AddAsync(customer);
+        await _auditService.LogAsync("Customer", customer.Id.ToString(), "Created", _currentUser.GetUserId(), null, MapToDto(customer));
         return MapToDto(customer);
     }
 
@@ -62,6 +67,8 @@ public class CustomerService : ICustomerService
         if (await _repository.DocumentExistsAsync(dto.Document, id))
             throw new InvalidOperationException("Já existe outro cliente com este documento.");
 
+        var before = MapToDto(customer);
+
         customer.Name = dto.Name;
         customer.Document = dto.Document;
         customer.Email = dto.Email;
@@ -69,15 +76,19 @@ public class CustomerService : ICustomerService
         customer.IsActive = dto.IsActive;
 
         await _repository.UpdateAsync(customer);
-        return MapToDto(customer);
+        var after = MapToDto(customer);
+        await _auditService.LogAsync("Customer", customer.Id.ToString(), "Updated", _currentUser.GetUserId(), before, after);
+        return after;
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        if (!await _repository.ExistsAsync(id))
-            throw new KeyNotFoundException("Cliente não encontrado.");
+        var customer = await _repository.GetByIdAsync(id)
+            ?? throw new KeyNotFoundException("Cliente não encontrado.");
 
+        var before = MapToDto(customer);
         await _repository.DeleteAsync(id);
+        await _auditService.LogAsync("Customer", id.ToString(), "Deleted", _currentUser.GetUserId(), before, null);
     }
 
     private static CustomerDto MapToDto(Customer c) => new()

@@ -20,6 +20,22 @@ namespace ErpDemo.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("ErpDemo.Domain.Entities.AuditLog", b =>
+            {
+                b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uniqueidentifier");
+                b.Property<string>("Entity").IsRequired().HasMaxLength(100).HasColumnType("nvarchar(100)");
+                b.Property<string>("EntityId").IsRequired().HasMaxLength(50).HasColumnType("nvarchar(50)");
+                b.Property<string>("Action").IsRequired().HasMaxLength(20).HasColumnType("nvarchar(20)");
+                b.Property<string>("UserId").IsRequired().HasMaxLength(200).HasColumnType("nvarchar(200)");
+                b.Property<string>("Before").HasColumnType("nvarchar(max)");
+                b.Property<string>("After").HasColumnType("nvarchar(max)");
+                b.Property<DateTime>("Timestamp").HasColumnType("datetime2");
+                b.HasKey("Id");
+                b.HasIndex("Timestamp");
+                b.HasIndex("Entity", "EntityId");
+                b.ToTable("AuditLogs");
+            });
+
             modelBuilder.Entity("ErpDemo.Domain.Entities.Customer", b =>
             {
                 b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uniqueidentifier");

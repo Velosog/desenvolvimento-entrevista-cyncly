@@ -1,4 +1,5 @@
 using ErpDemo.Application.DTOs;
+using ErpDemo.Application.Interfaces;
 using ErpDemo.Application.Services;
 using ErpDemo.Domain.Entities;
 using ErpDemo.Domain.Interfaces;
@@ -10,12 +11,17 @@ namespace ErpDemo.Tests;
 public class CustomerServiceTests
 {
     private readonly Mock<ICustomerRepository> _repoMock;
+    private readonly Mock<IAuditService> _auditMock;
+    private readonly Mock<ICurrentUserService> _currentUserMock;
     private readonly CustomerService _service;
 
     public CustomerServiceTests()
     {
         _repoMock = new Mock<ICustomerRepository>();
-        _service = new CustomerService(_repoMock.Object);
+        _auditMock = new Mock<IAuditService>();
+        _currentUserMock = new Mock<ICurrentUserService>();
+        _currentUserMock.Setup(u => u.GetUserId()).Returns("test@test.com");
+        _service = new CustomerService(_repoMock.Object, _auditMock.Object, _currentUserMock.Object);
     }
 
     [Fact]
@@ -42,6 +48,7 @@ public class CustomerServiceTests
         result.Document.Should().Be("12345678901");
         result.IsActive.Should().BeTrue();
         _repoMock.Verify(r => r.AddAsync(It.IsAny<Customer>()), Times.Once);
+        _auditMock.Verify(a => a.LogAsync("Customer", It.IsAny<string>(), "Created", "test@test.com", null, It.IsAny<CustomerDto>()), Times.Once);
     }
 
     [Fact]

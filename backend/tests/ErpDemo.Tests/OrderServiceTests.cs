@@ -1,4 +1,5 @@
 using ErpDemo.Application.DTOs;
+using ErpDemo.Application.Interfaces;
 using ErpDemo.Application.Services;
 using ErpDemo.Domain.Entities;
 using ErpDemo.Domain.Enums;
@@ -13,6 +14,8 @@ public class OrderServiceTests
     private readonly Mock<IOrderRepository> _orderRepoMock;
     private readonly Mock<IOrderItemRepository> _itemRepoMock;
     private readonly Mock<ICustomerRepository> _customerRepoMock;
+    private readonly Mock<IAuditService> _auditMock;
+    private readonly Mock<ICurrentUserService> _currentUserMock;
     private readonly OrderService _service;
 
     public OrderServiceTests()
@@ -20,7 +23,10 @@ public class OrderServiceTests
         _orderRepoMock = new Mock<IOrderRepository>();
         _itemRepoMock = new Mock<IOrderItemRepository>();
         _customerRepoMock = new Mock<ICustomerRepository>();
-        _service = new OrderService(_orderRepoMock.Object, _itemRepoMock.Object, _customerRepoMock.Object);
+        _auditMock = new Mock<IAuditService>();
+        _currentUserMock = new Mock<ICurrentUserService>();
+        _currentUserMock.Setup(u => u.GetUserId()).Returns("test@test.com");
+        _service = new OrderService(_orderRepoMock.Object, _itemRepoMock.Object, _customerRepoMock.Object, _auditMock.Object, _currentUserMock.Object);
     }
 
     [Fact]
