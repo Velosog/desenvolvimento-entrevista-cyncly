@@ -127,6 +127,21 @@ O banco já vem com:
 | DELETE | /api/orders/{id}/items/{itemId}   | Bearer     | Remove item            |
 | DELETE | /api/orders/{id}                  | Admin only | Exclui pedido          |
 
+### Imports
+| Método | Rota                    | Auth       | Descrição                          |
+|--------|-------------------------|------------|------------------------------------|
+| POST   | /api/imports/customers  | Admin only | Importa clientes via CSV           |
+
+### Audit
+| Método | Rota          | Auth       | Descrição                                |
+|--------|---------------|------------|------------------------------------------|
+| GET    | /api/audit    | Admin only | Lista auditoria com filtros              |
+
+### Reports
+| Método | Rota                  | Auth   | Descrição                                  |
+|--------|-----------------------|--------|--------------------------------------------|
+| GET    | /api/reports/summary  | Bearer | Relatório: totais, status, top clientes    |
+
 ## Checklist de Validação
 
 ### No Swagger (http://localhost:5000/swagger)
@@ -138,6 +153,9 @@ O banco já vem com:
 - [ ] PATCH /api/orders/{id}/status → confirma pedido Draft
 - [ ] POST /api/orders/{id}/items em pedido Confirmed → erro 400
 - [ ] DELETE /api/customers/{id} com Operator → erro 403
+- [ ] POST /api/imports/customers com CSV → relatório de importação
+- [ ] GET /api/audit → registros de auditoria das operações
+- [ ] GET /api/reports/summary → relatório com totais e top clientes
 
 ### No Frontend (http://localhost:5173 ou http://localhost:3000)
 - [ ] Login com admin@demo.com / 123456
