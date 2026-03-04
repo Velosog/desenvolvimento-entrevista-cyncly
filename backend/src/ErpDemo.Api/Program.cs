@@ -33,6 +33,7 @@ builder.Services.AddScoped<IImportService, ImportService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddHttpContextAccessor();
 
 // ─── FluentValidation ───
