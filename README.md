@@ -1,51 +1,127 @@
-# ERP Demo - Full-Stack Application
+# desenvolvimento-entrevista-cyncly
 
-Demo full-stack com fluxo de ERP: API em .NET 8 + Frontend React + SQL Server.
+A full-stack ERP-style demo application built to demonstrate senior-level engineering capabilities across C#/.NET, SQL Server, and React. The project simulates real enterprise workflows including customer management, order processing, audit logging, CSV data imports, and business reporting.
 
-## Arquitetura
+---
+
+## Project Overview
+
+This repository contains a complete, production-structured application following **Clean Architecture** principles on the backend and a modern **React + TypeScript** dashboard on the frontend. It is designed as a technical portfolio piece that showcases end-to-end development skills in an enterprise context.
+
+The system manages customers and orders with full CRUD operations, enforces business rules around order lifecycle (Draft → Confirmed → Canceled), and includes professional modules commonly found in ERP systems such as audit trails, bulk imports, and aggregated reports.
+
+---
+
+## Architecture
+
+The backend follows **Clean Architecture** with four distinct layers ensuring separation of concerns and testability:
 
 ```
-/backend                          → API .NET 8 (Clean Architecture)
-  /src
-    /ErpDemo.Domain                → Entidades, Enums, Interfaces
-    /ErpDemo.Application           → DTOs, Services, Validators
-    /ErpDemo.Infrastructure        → EF Core, Repositories, Migrations
-    /ErpDemo.Api                   → Controllers, Middleware, Config
-  /tests
-    /ErpDemo.Tests                 → Testes unitários (xUnit + Moq)
-/frontend                         → React + Vite + TypeScript
-docker-compose.yml                → SQL Server + API + Frontend
+desenvolvimento-entrevista-cyncly/
+│
+├── backend/                              .NET 8 Web API
+│   ├── src/
+│   │   ├── ErpDemo.Domain/              Entities, Enums, Repository Interfaces
+│   │   ├── ErpDemo.Application/         DTOs, Services, Validators, Service Interfaces
+│   │   ├── ErpDemo.Infrastructure/      EF Core DbContext, Repositories, Migrations
+│   │   └── ErpDemo.Api/                 Controllers, Middleware, Auth Config
+│   ├── tests/
+│   │   └── ErpDemo.Tests/               Unit Tests (xUnit + Moq + FluentAssertions)
+│   └── Dockerfile
+│
+├── frontend/                             React + Vite + TypeScript
+│   ├── src/
+│   │   ├── api/                         Centralized API client with interceptors
+│   │   ├── context/                     Auth context provider
+│   │   ├── components/                  Layout and shared components
+│   │   ├── pages/                       Login, Customers, Orders
+│   │   └── types/                       TypeScript type definitions
+│   └── Dockerfile
+│
+├── docker-compose.yml                    SQL Server + API + Frontend (Nginx)
+└── README.md
 ```
 
-## Funcionalidades
+---
 
-- **Autenticação JWT** com roles (Admin / Operator)
-- **CRUD de Clientes** com paginação, filtros e validação de documento
-- **CRUD de Pedidos** com itens, cálculo automático de total, controle de status
-- **Regras de negócio**: pedido confirmado não permite edição de itens; cancelado bloqueia alterações
-- **Dashboard React** com login, telas de listagem, criação/edição e detalhes
-- **Swagger** documentado com autenticação Bearer
+## Backend Technologies
 
-## Pré-requisitos
+| Technology           | Purpose                                      |
+|----------------------|----------------------------------------------|
+| **.NET 8**           | Web API framework                            |
+| **C# 12**           | Primary language                             |
+| **SQL Server 2022** | Relational database                          |
+| **Entity Framework Core 8** | ORM with code-first migrations       |
+| **FluentValidation** | Request validation with clear rules         |
+| **JWT Bearer**       | Token-based authentication with role claims |
+| **Swagger / OpenAPI** | API documentation                          |
+| **xUnit + Moq**     | Unit testing framework                       |
+
+## Frontend Technologies
+
+| Technology           | Purpose                                      |
+|----------------------|----------------------------------------------|
+| **React 18**         | UI library                                  |
+| **TypeScript**       | Type-safe JavaScript                        |
+| **Vite**             | Build tool and dev server                   |
+| **Axios**            | HTTP client with auth interceptors          |
+| **React Router v6**  | Client-side routing                         |
+
+---
+
+## Main Features
+
+### Customer Management
+Full CRUD with pagination, search filters (name, document, status), and document uniqueness validation (CPF/CNPJ).
+
+<!-- ![Customers Screenshot](docs/screenshots/customers.png) -->
+
+### Order Management
+Complete order lifecycle with items management. Orders follow a strict status flow: **Draft → Confirmed → Canceled**. Business rules enforce that confirmed orders cannot have items modified and canceled orders are fully locked.
+
+<!-- ![Orders Screenshot](docs/screenshots/orders.png) -->
+
+### Authentication & Authorization
+JWT-based authentication with role-based access control. Two roles are supported:
+- **Admin** — Full access including delete operations, imports, and audit logs
+- **Operator** — Standard CRUD operations without destructive actions
+
+<!-- ![Login Screenshot](docs/screenshots/login.png) -->
+
+### Business Reports
+Aggregated reporting endpoint returning total orders, total revenue (from confirmed orders), orders grouped by status, and top 10 customers ranked by spend. Queries are optimized using EF Core `GroupBy` with server-side aggregation.
+
+### Audit Log
+Automatic change tracking for Customer and Order entities. Every create, update, and delete operation is recorded with the full before/after JSON state, the acting user, and a timestamp. Queryable via API with filters on entity type, action, user, and date range.
+
+### CSV Customer Import
+Bulk import endpoint accepting CSV files with validation, duplicate detection (both in-file and against the database), and a detailed summary report showing inserted, duplicated, and invalid rows with per-row error details.
+
+---
+
+## How to Run
+
+### Prerequisites
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - [Node.js 18+](https://nodejs.org/)
-- [Docker](https://www.docker.com/) (para SQL Server)
+- [Docker](https://www.docker.com/)
 
-## Execução Rápida (Docker Compose)
+### Option 1 — Docker Compose (Recommended)
 
 ```bash
-# Sobe tudo: SQL Server + API + Frontend
 docker compose up --build -d
-
-# Acesse:
-# Frontend: http://localhost:3000
-# API/Swagger: http://localhost:5000/swagger
 ```
 
-## Execução Manual (Desenvolvimento)
+| Service   | URL                           |
+|-----------|-------------------------------|
+| Frontend  | http://localhost:3000          |
+| API       | http://localhost:5000          |
+| Swagger   | http://localhost:5000/swagger  |
 
-### 1. SQL Server (Docker)
+### Option 2 — Manual Setup
+
+#### 1. Database Setup
 
 ```bash
 docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=SqlServer2024!" \
@@ -53,120 +129,104 @@ docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=SqlServer2024!" \
   -d mcr.microsoft.com/mssql/server:2022-latest
 ```
 
-### 2. Backend (.NET 8)
+#### 2. Backend Setup
 
 ```bash
 cd backend
-
-# Restaurar pacotes
 dotnet restore
-
-# A API aplica migrations automaticamente no startup
 dotnet run --project src/ErpDemo.Api
-
-# API disponível em: http://localhost:5000
-# Swagger em: http://localhost:5000/swagger
 ```
 
-### 3. Frontend (React)
+The API starts at `http://localhost:5000` and applies migrations automatically on startup. Swagger is available at `http://localhost:5000/swagger`.
+
+#### 3. Frontend Setup
 
 ```bash
 cd frontend
-
 npm install
 npm run dev
-
-# Frontend disponível em: http://localhost:5173
 ```
 
-### 4. Testes
+The frontend starts at `http://localhost:5173`.
+
+#### 4. Running Tests
 
 ```bash
 cd backend
 dotnet test
 ```
 
-## Usuários Seed
+---
 
-| Email               | Senha  | Role     |
-|---------------------|--------|----------|
-| admin@demo.com      | 123456 | Admin    |
-| operator@demo.com   | 123456 | Operator |
+## Example Credentials
 
-## Dados Seed
+| Email                | Password | Role     |
+|----------------------|----------|----------|
+| `admin@demo.com`     | `123456` | Admin    |
+| `operator@demo.com`  | `123456` | Operator |
 
-O banco já vem com:
-- 3 clientes (Empresa Alpha, João Silva, Maria Santos)
-- 2 pedidos (1 Draft com 2 itens, 1 Confirmed com 1 item)
+The database is seeded with 3 customers and 2 orders on first run.
 
-## Endpoints da API
+---
+
+## API Endpoints
 
 ### Auth
-| Método | Rota             | Descrição                    |
-|--------|------------------|------------------------------|
-| POST   | /api/auth/login  | Login (retorna JWT)          |
+| Method | Route              | Auth   | Description            |
+|--------|--------------------|--------|------------------------|
+| POST   | `/api/auth/login`  | Public | Returns JWT token      |
 
 ### Customers
-| Método | Rota                  | Auth       | Descrição              |
-|--------|-----------------------|------------|------------------------|
-| GET    | /api/customers        | Bearer     | Lista com paginação    |
-| GET    | /api/customers/{id}   | Bearer     | Busca por ID           |
-| POST   | /api/customers        | Bearer     | Cria cliente           |
-| PUT    | /api/customers/{id}   | Bearer     | Atualiza cliente       |
-| DELETE | /api/customers/{id}   | Admin only | Exclui cliente         |
+| Method | Route                   | Auth       | Description            |
+|--------|-------------------------|------------|------------------------|
+| GET    | `/api/customers`        | Bearer     | List with pagination   |
+| GET    | `/api/customers/{id}`   | Bearer     | Get by ID              |
+| POST   | `/api/customers`        | Bearer     | Create customer        |
+| PUT    | `/api/customers/{id}`   | Bearer     | Update customer        |
+| DELETE | `/api/customers/{id}`   | Admin      | Delete customer        |
 
 ### Orders
-| Método | Rota                              | Auth       | Descrição              |
-|--------|-----------------------------------|------------|------------------------|
-| GET    | /api/orders                       | Bearer     | Lista com paginação    |
-| GET    | /api/orders/{id}                  | Bearer     | Busca por ID           |
-| POST   | /api/orders                       | Bearer     | Cria pedido com itens  |
-| PATCH  | /api/orders/{id}/status           | Bearer     | Altera status          |
-| POST   | /api/orders/{id}/items            | Bearer     | Adiciona item          |
-| PUT    | /api/orders/{id}/items/{itemId}   | Bearer     | Atualiza item          |
-| DELETE | /api/orders/{id}/items/{itemId}   | Bearer     | Remove item            |
-| DELETE | /api/orders/{id}                  | Admin only | Exclui pedido          |
+| Method | Route                                | Auth       | Description            |
+|--------|--------------------------------------|------------|------------------------|
+| GET    | `/api/orders`                        | Bearer     | List with pagination   |
+| GET    | `/api/orders/{id}`                   | Bearer     | Get by ID with items   |
+| POST   | `/api/orders`                        | Bearer     | Create order           |
+| PATCH  | `/api/orders/{id}/status`            | Bearer     | Update status          |
+| POST   | `/api/orders/{id}/items`             | Bearer     | Add item               |
+| PUT    | `/api/orders/{id}/items/{itemId}`    | Bearer     | Update item            |
+| DELETE | `/api/orders/{id}/items/{itemId}`    | Bearer     | Remove item            |
+| DELETE | `/api/orders/{id}`                   | Admin      | Delete order           |
 
 ### Imports
-| Método | Rota                    | Auth       | Descrição                          |
-|--------|-------------------------|------------|------------------------------------|
-| POST   | /api/imports/customers  | Admin only | Importa clientes via CSV           |
+| Method | Route                     | Auth  | Description                |
+|--------|---------------------------|-------|----------------------------|
+| POST   | `/api/imports/customers`  | Admin | Import customers from CSV  |
 
 ### Audit
-| Método | Rota          | Auth       | Descrição                                |
-|--------|---------------|------------|------------------------------------------|
-| GET    | /api/audit    | Admin only | Lista auditoria com filtros              |
+| Method | Route          | Auth  | Description                    |
+|--------|----------------|-------|--------------------------------|
+| GET    | `/api/audit`   | Admin | Query audit logs with filters  |
 
 ### Reports
-| Método | Rota                  | Auth   | Descrição                                  |
-|--------|-----------------------|--------|--------------------------------------------|
-| GET    | /api/reports/summary  | Bearer | Relatório: totais, status, top clientes    |
+| Method | Route                   | Auth   | Description              |
+|--------|-------------------------|--------|--------------------------|
+| GET    | `/api/reports/summary`  | Bearer | Business summary report  |
 
-## Checklist de Validação
+---
 
-### No Swagger (http://localhost:5000/swagger)
-- [ ] POST /api/auth/login com admin@demo.com / 123456 → token retornado
-- [ ] GET /api/customers com Bearer token → lista 3 clientes
-- [ ] POST /api/customers → cria novo cliente
-- [ ] GET /api/orders → lista 2 pedidos com itens
-- [ ] POST /api/orders → cria pedido com itens (total calculado)
-- [ ] PATCH /api/orders/{id}/status → confirma pedido Draft
-- [ ] POST /api/orders/{id}/items em pedido Confirmed → erro 400
-- [ ] DELETE /api/customers/{id} com Operator → erro 403
-- [ ] POST /api/imports/customers com CSV → relatório de importação
-- [ ] GET /api/audit → registros de auditoria das operações
-- [ ] GET /api/reports/summary → relatório com totais e top clientes
+## Screenshots
 
-### No Frontend (http://localhost:5173 ou http://localhost:3000)
-- [ ] Login com admin@demo.com / 123456
-- [ ] Tela de Clientes: listagem, filtro por nome, criar, editar, excluir
-- [ ] Tela de Pedidos: listagem, filtro por status, criar pedido com itens
-- [ ] Detalhe do Pedido: ver itens, adicionar/remover item, confirmar/cancelar
-- [ ] Logout e login com operator@demo.com → botão Excluir não aparece
+> Screenshots can be added to a `docs/screenshots/` directory.
 
-## Stack Técnica
+| Screen          | Preview                                            |
+|-----------------|----------------------------------------------------|
+| Login           | <!-- ![Login](docs/screenshots/login.png) -->      |
+| Customers List  | <!-- ![Customers](docs/screenshots/customers.png) --> |
+| Order Detail    | <!-- ![Orders](docs/screenshots/orders.png) -->    |
+| Swagger API     | <!-- ![Swagger](docs/screenshots/swagger.png) -->  |
 
-- **Backend**: .NET 8, C#, EF Core, SQL Server, JWT, FluentValidation, Swagger
-- **Frontend**: React 18, TypeScript, Vite, Axios, React Router
-- **Testes**: xUnit, Moq, FluentAssertions
-- **Infra**: Docker, Docker Compose, Nginx
+---
+
+## License
+
+This project is intended for demonstration and interview purposes.
