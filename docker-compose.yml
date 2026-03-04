@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: erp-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=SqlServer2024!
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: erp-api
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=ErpDemoDB;User Id=sa;Password=SqlServer2024!;TrustServerCertificate=True
+      - Jwt__Key=SuperSecretKeyForDemoErpApplication2024!@#$$%
+      - Jwt__Issuer=ErpDemo
+      - Jwt__Audience=ErpDemoApp
+    depends_on:
+      - sqlserver
+    restart: on-failure
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: erp-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+
+volumes:
+  sqlserver_data:
