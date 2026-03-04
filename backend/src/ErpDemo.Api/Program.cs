@@ -28,6 +28,7 @@ builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IImportService, ImportService>();
 
 // ─── FluentValidation ───
 builder.Services.AddFluentValidationAutoValidation();
